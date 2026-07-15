@@ -101,6 +101,62 @@
   var HOU_METRO_PREFIX = { '770': 1, '771': 1, '772': 1, '773': 1, '774': 1, '775': 1 };
   function houstonMetro(zip) { return /^\d{5}$/.test(zip) && !!HOU_METRO_PREFIX[zip.slice(0, 3)]; }
 
+  /* ============================ I18N ==================================== */
+  /* One embed serves both pages. Spanish (tú) renders on any /es/ path (or
+     ?lang=es). Salesforce values stay English — only on-screen labels change. */
+  var LANG = (/(^|\/)es(\/|$)/i.test(location.pathname) || (function(){ try { return new URLSearchParams(location.search).get('lang') === 'es'; } catch (e) { return false; } })()) ? 'es' : 'en';
+  var ES = {
+    'Founding waitlist': 'Lista de fundadores', '40 spots': '40 lugares', 'Step {n} of {N}': 'Paso {n} de {N}',
+    'Continue →': 'Continuar →', '← Back': '← Atrás', 'Save my spot': 'Reserva mi lugar', 'Saving…': 'Enviando…',
+    '🛡 Free, no deposit, no obligation. Your information stays private.': '🛡 Gratis, sin depósito y sin compromiso. Tu información se mantiene privada.',
+    "You're on the list.": 'Ya estás en la lista.',
+    'A care team member will reach out within one business day to confirm your spot — and you’ll be among the first to hear the clinic’s address and opening date.': 'Un miembro de nuestro equipo te contactará en un día hábil para confirmar tu lugar, y serás de los primeros en conocer la dirección y la fecha de apertura de la clínica.',
+    'Save your spot': 'Reserva tu lugar',
+    'Only 40 founding spots — tell us where to reach you and you’re in line. The rest takes about a minute.': 'Solo 40 lugares de fundador. Dinos cómo comunicarnos contigo y quedarás en la lista. Lo demás toma cerca de un minuto.',
+    'Your name': 'Tu nombre', 'First and last name': 'Nombre y apellido', 'Email': 'Correo electrónico', 'Phone': 'Teléfono',
+    'Preferred language': 'Idioma preferido', 'Select a language': 'Selecciona un idioma',
+    'So our care team reaches out in the language you’re most comfortable with.': 'Para que nuestro equipo se comunique contigo en el idioma que prefieras.',
+    'English': 'Inglés', 'Spanish': 'Español',
+    'Location & coverage': 'Ubicación y cobertura',
+    'Your ZIP and insurance help us verify coverage before opening day.': 'Tu código postal y seguro nos ayudan a verificar tu cobertura antes de la apertura.',
+    'Your ZIP code': 'Tu código postal',
+    'What insurance coverage do you have?': '¿Qué cobertura de seguro tienes?',
+    'Primary insurance only': 'Solo seguro primario', 'Primary & secondary insurance': 'Seguro primario y secundario', 'No insurance / not sure': 'Sin seguro / no estoy seguro',
+    'Insurance coverage': 'Cobertura de seguro', 'Change insurance coverage answer': 'Cambiar respuesta de cobertura',
+    'We do require insurance to begin ABA therapy — and many families qualify for Medicaid. Join the waitlist now and our team will help you understand your options before opening day.': 'Sí requerimos seguro para comenzar la terapia ABA, y muchas familias califican para Medicaid. Únete a la lista ahora y nuestro equipo te ayudará a entender tus opciones antes de la apertura.',
+    'Primary': 'Primario', 'Secondary': 'Secundario', 'Commercial / private': 'Comercial / privado',
+    'Select your payor': 'Selecciona tu aseguradora', 'Loading payors…': 'Cargando aseguradoras…', 'My payor isn’t listed / not sure': 'Mi aseguradora no aparece / no estoy seguro',
+    'Based in another state?': '¿Está en otro estado?',
+    'You’re in our Houston service area — this clinic is being built for families like yours.': 'Estás en nuestra área de servicio de Houston: esta clínica se está construyendo para familias como la tuya.',
+    'Tell us about your child': 'Cuéntanos sobre tu hijo/a', 'A few quick questions. There are no wrong answers.': 'Unas preguntas rápidas. No hay respuestas incorrectas.',
+    "Your child's age": 'Edad de tu hijo/a', 'Select an age range': 'Selecciona un rango de edad',
+    'Under 2': 'Menos de 2', '2–5 years': '2–5 años', '6–9 years': '6–9 años', '10–13 years': '10–13 años', '14+ years': '14+ años',
+    'Does your child have an autism (ASD) diagnosis?': '¿Tu hijo/a tiene un diagnóstico de autismo (TEA)?',
+    'Yes': 'Sí', 'Not yet': 'Todavía no', 'In process': 'En proceso', "I'm not sure": 'No estoy seguro',
+    'Clinic ABA requires an autism diagnosis to start — but you can join the waitlist now, and our team will point you to next steps for an evaluation.': 'La terapia ABA en clínica requiere un diagnóstico de autismo para comenzar, pero puedes unirte a la lista ahora y nuestro equipo te orientará sobre los siguientes pasos para una evaluación.',
+    'Great that it’s underway. Opening day may line up well with your timeline — our team will walk you through it.': 'Qué bien que ya está en camino. La fecha de apertura podría coincidir con tus tiempos; nuestro equipo te guiará.',
+    'No problem. A diagnosis is typically needed for ABA, and our team can help you understand what’s required.': 'No hay problema. Por lo general se necesita un diagnóstico para ABA, y nuestro equipo puede ayudarte a entender qué se requiere.',
+    'Your preferred schedule': 'Tu horario preferido',
+    'The clinic will be open 8:30–5:30, Monday–Friday. Founding families pick their session times first.': 'La clínica abrirá de 8:30 a 5:30, de lunes a viernes. Las familias fundadoras eligen sus horarios primero.',
+    'Which session times fit your family best?': '¿Qué horarios le convienen más a tu familia?',
+    'Mornings · 8:30–11:30': 'Mañanas · 8:30–11:30', 'Mid-day · 11:30–2:30': 'Mediodía · 11:30–2:30', 'Afternoons · 2:30–5:30': 'Tardes · 2:30–5:30', 'Flexible / not sure yet': 'Flexible / aún no estoy seguro',
+    'Not a commitment — it helps us plan staffing and hold the right times for you.': 'No es un compromiso; nos ayuda a planificar el personal y reservar los horarios adecuados para ti.',
+    'Roughly how many hours per week are you hoping for?': '¿Aproximadamente cuántas horas por semana esperas?', 'e.g. 15 (max 40)': 'ej. 15 (máx. 40)',
+    'Most treatment plans call for around 15+ hours a week for progress to stick. Tell us what works — our team will help you find a plan that fits.': 'La mayoría de los planes recomiendan alrededor de 15+ horas por semana para que el progreso se mantenga. Dinos qué te funciona y nuestro equipo te ayudará a encontrar un plan adecuado.',
+    'Great — that’s the range where clinic-based ABA tends to work best. We’ll plan for it.': 'Excelente: ese es el rango donde la terapia ABA en clínica suele funcionar mejor. Lo tendremos en cuenta.',
+    'One last thing': 'Una última cosa',
+    'How you found us helps us reach more Houston families. Then you’re on the list.': 'Saber cómo nos encontraste nos ayuda a llegar a más familias de Houston. Después quedarás en la lista.',
+    'How did you hear about us?': '¿Cómo te enteraste de nosotros?', 'Select an option': 'Selecciona una opción',
+    'Referring provider or practice': 'Proveedor o consultorio que refiere', 'Provider / practice name': 'Nombre del proveedor o consultorio',
+    'Please complete the CAPTCHA to continue.': 'Por favor completa el CAPTCHA para continuar.',
+    'Want a jump-start while you wait?': '¿Quieres empezar mientras esperas?',
+    'Want our team to reach out about starting In-Home now?': '¿Quieres que nuestro equipo te contacte para empezar la terapia en el hogar ahora?',
+    'Yes, tell me more': 'Sí, cuéntenme más', 'Not right now': 'Ahora no',
+    'ABA Provider': 'Proveedor de ABA', 'AI Search': 'Búsqueda con IA', 'Billboard': 'Valla publicitaria', 'Facebook Group': 'Grupo de Facebook', 'Family Member': 'Familiar', 'Forta Parent Referral': 'Recomendación de un padre de Forta', 'Insurance Referral': 'Referencia del seguro', 'Physician Referral': 'Referencia médica', 'Social Worker': 'Trabajador social', 'Web Search': 'Búsqueda web', 'Youtube': 'YouTube', 'Other': 'Otro'
+  };
+  function T(s) { if (LANG !== 'es' || s == null) return s; var m = ES[s]; return m == null ? s : m; }
+  function stepLabel() { return T('Step {n} of {N}').replace('{n}', state.step).replace('{N}', TOTAL_STEPS); }
+
   var CLINIC_STATE = 'TX'; // clinic is a fixed physical location — Sugar Land, SW Houston
 
   var DIAGNOSIS_TO_SF = { yes: 'Yes', 'in-process': 'No, evaluation scheduled', no: 'No', unsure: 'No' };
@@ -547,19 +603,19 @@
     var type = state[typeKey], payor = state[payorKey];
     if (type && payor) {
       var curSt = insStateFor(stateKey);
-      var label = payor === 'not-listed' ? 'Payor not listed' : payor;
+      var label = payor === 'not-listed' ? (LANG === 'es' ? 'Aseguradora no indicada' : 'Payor not listed') : payor;
       var stTag = state[stateKey] ? ' (' + curSt + ')' : '';
-      frag.appendChild(chipRow(title, TYPE_LABELS[type] + ' · ' + label + stTag, 'Remove ' + title + ' insurance', function () {
+      frag.appendChild(chipRow(T(title), T(TYPE_LABELS[type]) + ' · ' + label + stTag, (LANG === 'es' ? 'Quitar seguro ' + T(title).toLowerCase() : 'Remove ' + title + ' insurance'), function () {
         state[typeKey] = ''; state[payorKey] = ''; state[stateKey] = ''; state['stEdit_' + stateKey] = false;
       }));
       return frag;
     }
     var box = el('div', 'hf-inswrap hf-fade');
     if (!type) {
-      box.appendChild(el('label', 'hf-label', esc(title) + ' coverage type'));
+      box.appendChild(el('label', 'hf-label', (LANG === 'es' ? 'Tipo de cobertura (' + T(title).toLowerCase() + ')' : title + ' coverage type')));
       var choices = el('div', 'hf-choices');
       [['medicaid', 'Medicaid'], ['commercial', 'Commercial / private']].forEach(function (t) {
-        var b = el('button', 'hf-choice', esc(t[1]));
+        var b = el('button', 'hf-choice', esc(T(t[1])));
         b.type = 'button';
         b.addEventListener('click', function () { state[typeKey] = t[0]; state[payorKey] = ''; render(); });
         choices.appendChild(b);
@@ -568,19 +624,19 @@
     } else {
       var curSt2 = insStateFor(stateKey);
       var crumb = el('div', 'hf-top');
-      crumb.appendChild(el('div', 'hf-chip-kicker', esc(title) + ' · ' + esc(TYPE_LABELS[type])));
+      crumb.appendChild(el('div', 'hf-chip-kicker', esc(T(title)) + ' · ' + esc(T(TYPE_LABELS[type]))));
       var over = el('button', 'hf-chip-x', '✕');
-      over.type = 'button'; over.setAttribute('aria-label', 'Start ' + title + ' insurance over');
+      over.type = 'button'; over.setAttribute('aria-label', (LANG === 'es' ? 'Empezar de nuevo el seguro ' + T(title).toLowerCase() : 'Start ' + title + ' insurance over'));
       over.addEventListener('click', function () { state[typeKey] = ''; state[payorKey] = ''; state[stateKey] = ''; state['stEdit_' + stateKey] = false; render(); });
       crumb.appendChild(over);
       box.appendChild(crumb);
       var f = el('div', 'hf-field');
-      f.appendChild(el('label', 'hf-label', 'Select the ' + title.toLowerCase() + ' payor'));
+      f.appendChild(el('label', 'hf-label', (LANG === 'es' ? 'Selecciona tu aseguradora' : 'Select the ' + title.toLowerCase() + ' payor')));
       var sel = el('select', 'hf-select hf-payor-select');
       var names = payorNamesFor(type, curSt2);
-      var opts = '<option value="" disabled selected>' + (names ? 'Select your payor' : 'Loading payors…') + '</option>';
+      var opts = '<option value="" disabled selected>' + esc(names ? T('Select your payor') : T('Loading payors…')) + '</option>';
       (names || []).forEach(function (n) { opts += '<option value="' + esc(n) + '">' + esc(n) + '</option>'; });
-      opts += '<option value="not-listed">My payor isn&#8217;t listed / not sure</option>';
+      opts += '<option value="not-listed">' + esc(T('My payor isn’t listed / not sure')) + '</option>';
       sel.innerHTML = opts;
       sel.addEventListener('change', function () { state[payorKey] = sel.value; render(); });
       f.appendChild(sel);
@@ -589,15 +645,15 @@
       // surfaced only if this plan is based in another state.
       var stWrap = el('div', 'hf-field');
       if (state['stEdit_' + stateKey]) {
-        stWrap.appendChild(el('label', 'hf-label', 'Which state is this ' + title.toLowerCase() + ' plan based in?'));
+        stWrap.appendChild(el('label', 'hf-label', (LANG === 'es' ? '¿En qué estado está este plan ' + T(title).toLowerCase() + '?' : 'Which state is this ' + title.toLowerCase() + ' plan based in?')));
         var ssel = el('select', 'hf-select');
         ssel.innerHTML = STATES.map(function (s) { return '<option value="' + s + '"' + (curSt2 === s ? ' selected' : '') + '>' + s + '</option>'; }).join('');
         ssel.addEventListener('change', function () { state[stateKey] = ssel.value; state[payorKey] = ''; render(); });
         stWrap.appendChild(ssel);
       } else {
         var line = el('p', 'hf-hint');
-        line.appendChild(document.createTextNode('Showing ' + curSt2 + ' plans. '));
-        var chg = el('button', 'hf-inline-link', 'Based in another state?');
+        line.appendChild(document.createTextNode(LANG === 'es' ? 'Mostrando planes de ' + curSt2 + '. ' : 'Showing ' + curSt2 + ' plans. '));
+        var chg = el('button', 'hf-inline-link', T('Based in another state?'));
         chg.type = 'button';
         chg.addEventListener('click', function () { state['stEdit_' + stateKey] = true; render(); });
         line.appendChild(chg);
@@ -675,13 +731,13 @@
   function languageField() {
     var frag = document.createDocumentFragment();
     var lf = el('div', 'hf-field');
-    lf.appendChild(el('label', 'hf-label', 'Preferred language'));
+    lf.appendChild(el('label', 'hf-label', T('Preferred language')));
     var lsel = el('select', 'hf-select');
-    lsel.innerHTML = '<option value="" disabled' + (state.preferredLanguage ? '' : ' selected') + '>Select a language</option>' +
-      LANGUAGES.map(function (o) { return '<option value="' + esc(o) + '"' + (state.preferredLanguage === o ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('');
+    lsel.innerHTML = '<option value="" disabled' + (state.preferredLanguage ? '' : ' selected') + '>' + esc(T('Select a language')) + '</option>' +
+      LANGUAGES.map(function (o) { return '<option value="' + esc(o) + '"' + (state.preferredLanguage === o ? ' selected' : '') + '>' + esc(T(o)) + '</option>'; }).join('');
     lsel.addEventListener('change', function () { state.preferredLanguage = lsel.value; if (lsel.value !== 'Other') state.preferredLanguageOther = ''; render(); });
     lf.appendChild(lsel);
-    lf.appendChild(el('p', 'hf-hint', 'So our care team reaches out in the language you’re most comfortable with.'));
+    lf.appendChild(el('p', 'hf-hint', T('So our care team reaches out in the language you’re most comfortable with.')));
     frag.appendChild(lf);
     if (state.preferredLanguage === 'Other') {
       frag.appendChild(textField('Which language?', 'preferredLanguageOther', { type: 'text', autocomplete: 'language', placeholder: 'Your preferred language' }));
@@ -691,41 +747,45 @@
 
   function renderStep(body) {
     if (state.step === 1) {
-      body.appendChild(stepHeader('Save your spot', 'Only 40 founding spots — tell us where to reach you and you’re in line. The rest takes about a minute.'));
-      body.appendChild(textField('Your name', 'parentName', { type: 'text', autocomplete: 'name', placeholder: 'First and last name' }));
-      body.appendChild(textField('Email', 'email', { type: 'email', autocomplete: 'email', placeholder: 'you@example.com' }));
-      body.appendChild(textField('Phone', 'phone', { type: 'tel', inputmode: 'tel', autocomplete: 'tel', placeholder: '(555) 555-5555' }));
+      body.appendChild(stepHeader(T('Save your spot'), T('Only 40 founding spots — tell us where to reach you and you’re in line. The rest takes about a minute.')));
+      body.appendChild(textField(T('Your name'), 'parentName', { type: 'text', autocomplete: 'name', placeholder: T('First and last name') }));
+      body.appendChild(textField(T('Email'), 'email', { type: 'email', autocomplete: 'email', placeholder: 'you@example.com' }));
+      body.appendChild(textField(T('Phone'), 'phone', { type: 'tel', inputmode: 'tel', autocomplete: 'tel', placeholder: '(555) 555-5555' }));
       body.appendChild(languageField());
     }
 
     if (state.step === 2) {
-      body.appendChild(stepHeader('Location & coverage', 'Your ZIP and insurance help us verify coverage before opening day.'));
-      body.appendChild(textField('Your ZIP code', 'zip', { type: 'text', inputmode: 'numeric', autocomplete: 'postal-code', maxlength: '5', placeholder: 'e.g. 77449' }));
+      body.appendChild(stepHeader(T('Location & coverage'), T('Your ZIP and insurance help us verify coverage before opening day.')));
+      body.appendChild(textField(T('Your ZIP code'), 'zip', { type: 'text', inputmode: 'numeric', autocomplete: 'postal-code', maxlength: '5', placeholder: 'e.g. 77449' }));
       if (state.zipComplete) {
-        var tier = zipTier();
+        var tier = zipTier(); var isEs = LANG === 'es';
         if (tier === 'metro') {
-          body.appendChild(el('div', 'hf-note hf-positive', '<span>✓</span><span>You’re in our Houston service area — this clinic is being built for families like yours.</span>'));
+          body.appendChild(el('div', 'hf-note hf-positive', '<span>✓</span><span>' + esc(T('You’re in our Houston service area — this clinic is being built for families like yours.')) + '</span>'));
         } else if (tier === 'inhome') {
-          body.appendChild(el('div', 'hf-note hf-info', '<span>&#9432;</span><span>We won’t have a clinic in your city yet — but Forta’s <strong>In-Home ABA</strong> is available to you today. You can still join the waitlist, and our team will get you started at home in the meantime. <a href="' + INHOME_URL + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Explore In-Home ABA →</a></span>'));
+          body.appendChild(el('div', 'hf-note hf-info', '<span>&#9432;</span><span>' + (isEs
+            ? 'Todavía no tendremos una clínica en tu ciudad, pero la terapia ABA en el hogar de Forta está disponible para ti hoy. Puedes unirte a la lista de todos modos y nuestro equipo te ayudará a empezar en casa mientras tanto. <a href="' + INHOME_URL + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Conoce la terapia en el hogar →</a>'
+            : 'We won’t have a clinic in your city yet — but Forta’s <strong>In-Home ABA</strong> is available to you today. You can still join the waitlist, and our team will get you started at home in the meantime. <a href="' + INHOME_URL + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Explore In-Home ABA →</a>') + '</span>'));
         } else if (tier === 'virtual') {
-          body.appendChild(el('div', 'hf-note hf-caution', '<span>&#9432;</span><span>We don’t have a clinic near you yet, so an in-person spot won’t apply — but Forta’s <strong>Virtual ABA</strong> can start now, wherever you live. <a href="' + VIRTUAL_URL + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Start Virtual ABA →</a></span>'));
+          body.appendChild(el('div', 'hf-note hf-caution', '<span>&#9432;</span><span>' + (isEs
+            ? 'Todavía no tenemos una clínica cerca de ti, así que un lugar presencial no aplicará, pero la terapia ABA virtual de Forta puede empezar ahora, vivas donde vivas. <a href="' + VIRTUAL_URL + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Comienza la terapia virtual →</a>'
+            : 'We don’t have a clinic near you yet, so an in-person spot won’t apply — but Forta’s <strong>Virtual ABA</strong> can start now, wherever you live. <a href="' + VIRTUAL_URL + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Start Virtual ABA →</a>') + '</span>'));
         }
         if (!state.coverage) {
           var f = el('div', 'hf-field hf-fade');
-          f.appendChild(el('label', 'hf-label', 'What insurance coverage do you have?'));
+          f.appendChild(el('label', 'hf-label', T('What insurance coverage do you have?')));
           f.appendChild(choiceButtons('coverage', [
-            { label: 'Primary insurance only', value: 'primary', onPick: resetIns },
-            { label: 'Primary & secondary insurance', value: 'both', onPick: resetIns },
-            { label: 'No insurance / not sure', value: 'none', onPick: resetIns }
+            { label: T('Primary insurance only'), value: 'primary', onPick: resetIns },
+            { label: T('Primary & secondary insurance'), value: 'both', onPick: resetIns },
+            { label: T('No insurance / not sure'), value: 'none', onPick: resetIns }
           ], 1));
           body.appendChild(f);
         } else {
           var cf = el('div', 'hf-field');
-          cf.appendChild(chipRow('Insurance coverage', COVERAGE_LABELS[state.coverage], 'Change insurance coverage answer', function () {
+          cf.appendChild(chipRow(T('Insurance coverage'), T(COVERAGE_LABELS[state.coverage]), T('Change insurance coverage answer'), function () {
             state.coverage = ''; resetIns();
           }));
           if (state.coverage === 'none') {
-            cf.appendChild(el('div', 'hf-note hf-info', '<span>&#9432;</span><span>We do require insurance to begin ABA therapy — and many families qualify for Medicaid. Join the waitlist now and our team will help you understand your options before opening day.</span>'));
+            cf.appendChild(el('div', 'hf-note hf-info', '<span>&#9432;</span><span>' + esc(T('We do require insurance to begin ABA therapy — and many families qualify for Medicaid. Join the waitlist now and our team will help you understand your options before opening day.')) + '</span>'));
           }
           if (state.coverage === 'primary' || state.coverage === 'both') {
             var wrap = el('div', 'hf-field');
@@ -743,80 +803,82 @@
     }
 
     if (state.step === 3) {
-      body.appendChild(stepHeader('Tell us about your child', 'A few quick questions. There are no wrong answers.'));
+      body.appendChild(stepHeader(T('Tell us about your child'), T('A few quick questions. There are no wrong answers.')));
       var f = el('div', 'hf-field');
-      f.appendChild(el('label', 'hf-label', "Your child's age"));
+      f.appendChild(el('label', 'hf-label', T("Your child's age")));
       var sel = el('select', 'hf-select');
-      sel.innerHTML = '<option value="" disabled' + (state.childAge ? '' : ' selected') + '>Select an age range</option>' +
+      sel.innerHTML = '<option value="" disabled' + (state.childAge ? '' : ' selected') + '>' + esc(T('Select an age range')) + '</option>' +
         [['under-2', 'Under 2'], ['2-5', '2–5 years'], ['6-9', '6–9 years'], ['10-13', '10–13 years'], ['14-plus', '14+ years']]
-          .map(function (o) { return '<option value="' + o[0] + '"' + (state.childAge === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('');
+          .map(function (o) { return '<option value="' + o[0] + '"' + (state.childAge === o[0] ? ' selected' : '') + '>' + esc(T(o[1])) + '</option>'; }).join('');
       sel.addEventListener('change', function () { state.childAge = sel.value; render(); });
       f.appendChild(sel);
       body.appendChild(f);
       var d = el('div', 'hf-field');
-      d.appendChild(el('label', 'hf-label', 'Does your child have an autism (ASD) diagnosis?'));
+      d.appendChild(el('label', 'hf-label', T('Does your child have an autism (ASD) diagnosis?')));
       d.appendChild(choiceButtons('diagnosis', [
-        { label: 'Yes', value: 'yes', tone: 'positive' },
-        { label: 'Not yet', value: 'no', tone: 'caution', warning: 'Clinic ABA requires an autism diagnosis to start — but you can join the waitlist now, and our team will point you to next steps for an evaluation.' },
-        { label: 'In process', value: 'in-process', tone: 'info', warning: 'Great that it’s underway. Opening day may line up well with your timeline — our team will walk you through it.' },
-        { label: "I'm not sure", value: 'unsure', tone: 'caution', warning: 'No problem. A diagnosis is typically needed for ABA, and our team can help you understand what’s required.' }
+        { label: T('Yes'), value: 'yes', tone: 'positive' },
+        { label: T('Not yet'), value: 'no', tone: 'caution', warning: T('Clinic ABA requires an autism diagnosis to start — but you can join the waitlist now, and our team will point you to next steps for an evaluation.') },
+        { label: T('In process'), value: 'in-process', tone: 'info', warning: T('Great that it’s underway. Opening day may line up well with your timeline — our team will walk you through it.') },
+        { label: T("I'm not sure"), value: 'unsure', tone: 'caution', warning: T('No problem. A diagnosis is typically needed for ABA, and our team can help you understand what’s required.') }
       ]));
       body.appendChild(d);
     }
 
     if (state.step === 4) {
-      body.appendChild(stepHeader('Your preferred schedule', 'The clinic will be open 8:30–5:30, Monday–Friday. Founding families pick their session times first.'));
+      body.appendChild(stepHeader(T('Your preferred schedule'), T('The clinic will be open 8:30–5:30, Monday–Friday. Founding families pick their session times first.')));
       var f = el('div', 'hf-field');
-      f.appendChild(el('label', 'hf-label', 'Which session times fit your family best?'));
+      f.appendChild(el('label', 'hf-label', T('Which session times fit your family best?')));
       f.appendChild(choiceButtons('timing', [
-        { label: TIMING_LABELS.mornings, value: 'mornings' },
-        { label: TIMING_LABELS.midday, value: 'midday' },
-        { label: TIMING_LABELS.afternoons, value: 'afternoons' },
-        { label: TIMING_LABELS.flexible, value: 'flexible' }
+        { label: T(TIMING_LABELS.mornings), value: 'mornings' },
+        { label: T(TIMING_LABELS.midday), value: 'midday' },
+        { label: T(TIMING_LABELS.afternoons), value: 'afternoons' },
+        { label: T(TIMING_LABELS.flexible), value: 'flexible' }
       ]));
-      f.appendChild(el('p', 'hf-hint', 'Not a commitment — it helps us plan staffing and hold the right times for you.'));
+      f.appendChild(el('p', 'hf-hint', T('Not a commitment — it helps us plan staffing and hold the right times for you.')));
       body.appendChild(f);
-      body.appendChild(textField('Roughly how many hours per week are you hoping for?', 'hours', { type: 'text', inputmode: 'numeric', maxlength: '2', placeholder: 'e.g. 15 (max 40)' }));
+      body.appendChild(textField(T('Roughly how many hours per week are you hoping for?'), 'hours', { type: 'text', inputmode: 'numeric', maxlength: '2', placeholder: T('e.g. 15 (max 40)') }));
       var h = Number(state.hours);
       if (state.hoursTouched && state.hours !== '' && !isNaN(h)) {
-        if (h < HOURS_THRESHOLD) body.appendChild(el('div', 'hf-note hf-neutral', '<span>&#9432;</span><span>Most treatment plans call for around 15+ hours a week for progress to stick. Tell us what works — our team will help you find a plan that fits.</span>'));
-        if (h >= HOURS_THRESHOLD) body.appendChild(el('div', 'hf-note hf-positive', '<span>✓</span><span>Great — that’s the range where clinic-based ABA tends to work best. We’ll plan for it.</span>'));
+        if (h < HOURS_THRESHOLD) body.appendChild(el('div', 'hf-note hf-neutral', '<span>&#9432;</span><span>' + esc(T('Most treatment plans call for around 15+ hours a week for progress to stick. Tell us what works — our team will help you find a plan that fits.')) + '</span>'));
+        if (h >= HOURS_THRESHOLD) body.appendChild(el('div', 'hf-note hf-positive', '<span>✓</span><span>' + esc(T('Great — that’s the range where clinic-based ABA tends to work best. We’ll plan for it.')) + '</span>'));
       }
     }
 
     if (state.step === 5) {
-      body.appendChild(stepHeader('One last thing', 'How you found us helps us reach more Houston families. Then you’re on the list.'));
+      body.appendChild(stepHeader(T('One last thing'), T('How you found us helps us reach more Houston families. Then you’re on the list.')));
 
       // In-Home cross-sell — only when the entered ZIP is genuinely covered.
       if (inHomeQualifies()) {
-        var ih = el('div', 'hf-ih hf-fade');
+        var ih = el('div', 'hf-ih hf-fade'); var ihEs = LANG === 'es';
         ih.innerHTML =
-          '<span class="hf-ih-badge"><span class="hf-ih-dot"></span> In-Home is available at your ZIP</span>' +
-          '<p class="hf-ih-t">Want a jump-start while you wait?</p>' +
-          '<p class="hf-ih-p">You don’t have to wait for the clinic to open. In-Home ABA is available in your area right now — it gets your child started sooner, and families already in therapy with Forta get <strong>priority for the founding clinic spots</strong>.</p>' +
-          '<p class="hf-ih-q">Want our team to reach out about starting In-Home now?</p>';
+          '<span class="hf-ih-badge"><span class="hf-ih-dot"></span> ' + (ihEs ? 'La terapia en el hogar está disponible en tu código postal' : 'In-Home is available at your ZIP') + '</span>' +
+          '<p class="hf-ih-t">' + esc(T('Want a jump-start while you wait?')) + '</p>' +
+          '<p class="hf-ih-p">' + (ihEs ? 'No tienes que esperar a que abra la clínica. La terapia ABA en el hogar está disponible en tu área ahora mismo: tu hijo/a puede empezar antes, y las familias que ya están en terapia con Forta tienen <strong>prioridad para los lugares de fundador de la clínica</strong>.' : 'You don’t have to wait for the clinic to open. In-Home ABA is available in your area right now — it gets your child started sooner, and families already in therapy with Forta get <strong>priority for the founding clinic spots</strong>.') + '</p>' +
+          '<p class="hf-ih-q">' + esc(T('Want our team to reach out about starting In-Home now?')) + '</p>';
         ih.appendChild(choiceButtons('inHomeInterest', [
-          { label: 'Yes, tell me more', value: 'yes', tone: 'info' },
-          { label: 'Not right now', value: 'no' }
+          { label: T('Yes, tell me more'), value: 'yes', tone: 'info' },
+          { label: T('Not right now'), value: 'no' }
         ]));
         body.appendChild(ih);
       }
 
       var f = el('div', 'hf-field');
-      f.appendChild(el('label', 'hf-label', 'How did you hear about us?'));
+      f.appendChild(el('label', 'hf-label', T('How did you hear about us?')));
       var sel = el('select', 'hf-select');
-      sel.innerHTML = '<option value="" disabled' + (state.leadSource ? '' : ' selected') + '>Select an option</option>' +
-        LEAD_SOURCES.map(function (o) { return '<option value="' + esc(o) + '"' + (state.leadSource === o ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('');
+      sel.innerHTML = '<option value="" disabled' + (state.leadSource ? '' : ' selected') + '>' + esc(T('Select an option')) + '</option>' +
+        LEAD_SOURCES.map(function (o) { return '<option value="' + esc(o) + '"' + (state.leadSource === o ? ' selected' : '') + '>' + esc(T(o)) + '</option>'; }).join('');
       sel.addEventListener('change', function () { state.leadSource = sel.value; render(); });
       f.appendChild(sel);
       body.appendChild(f);
       if (state.leadSource === 'Physician Referral') {
-        body.appendChild(textField('Referring provider or practice', 'physicianProvider', { type: 'text', placeholder: 'Provider / practice name' }));
+        body.appendChild(textField(T('Referring provider or practice'), 'physicianProvider', { type: 'text', placeholder: T('Provider / practice name') }));
       }
-      body.appendChild(el('div', 'hf-consent', '<span>🔒</span><span>By submitting, you consent to Forta creating and maintaining electronic health records for your child, and to receive calls, texts, and emails about care at the number provided (including autodialed messages), as described in our <a href="' + ECP_URL + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Electronic Communications Policy</a>. Consent isn’t a condition of service; message &amp; data rates may apply, and you can opt out anytime. Your information is protected under HIPAA.</span>'));
+      body.appendChild(el('div', 'hf-consent', '<span>🔒</span><span>' + (LANG === 'es'
+        ? 'Al enviar, autorizas a Forta a crear y mantener registros médicos electrónicos de tu hijo/a y a recibir llamadas, mensajes de texto y correos electrónicos sobre la atención al número proporcionado (incluidos mensajes con marcación automática), como se describe en nuestra <a href="' + ECP_URL + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Política de Comunicaciones Electrónicas</a>. El consentimiento no es condición para recibir el servicio; pueden aplicarse tarifas de mensajes y datos, y puedes darte de baja en cualquier momento. Tu información está protegida por HIPAA.'
+        : 'By submitting, you consent to Forta creating and maintaining electronic health records for your child, and to receive calls, texts, and emails about care at the number provided (including autodialed messages), as described in our <a href="' + ECP_URL + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Electronic Communications Policy</a>. Consent isn’t a condition of service; message &amp; data rates may apply, and you can opt out anytime. Your information is protected under HIPAA.') + '</span>'));
       var cap = el('div', 'hf-captcha'); cap.id = 'hf-captcha';
       body.appendChild(cap);
-      var capErr = el('p', 'hf-captcha-err', 'Please complete the CAPTCHA to continue.');
+      var capErr = el('p', 'hf-captcha-err', T('Please complete the CAPTCHA to continue.'));
       capErr.id = 'hf-captcha-err';
       body.appendChild(capErr);
       ensureRecaptcha();
@@ -832,12 +894,12 @@
     if (!mountEl) return;
     mountEl.innerHTML = '';
     var top = el('div', 'hf-top');
-    top.appendChild(el('div', 'hf-kicker', 'Founding waitlist'));
-    top.appendChild(el('div', 'hf-spots', '40 spots'));
+    top.appendChild(el('div', 'hf-kicker', T('Founding waitlist')));
+    top.appendChild(el('div', 'hf-spots', T('40 spots')));
     mountEl.appendChild(top);
     var top2 = el('div', 'hf-top');
     top2.style.marginTop = '10px';
-    top2.appendChild(el('div', 'hf-stepnum', 'Step ' + state.step + ' of ' + TOTAL_STEPS));
+    top2.appendChild(el('div', 'hf-stepnum', stepLabel()));
     mountEl.appendChild(top2);
     var bars = el('div', 'hf-bars');
     for (var i = 0; i < TOTAL_STEPS; i++) bars.appendChild(el('span', 'hf-bar' + (i < state.step ? ' hf-done' : '')));
@@ -850,12 +912,12 @@
 
     var nav = el('div', 'hf-nav');
     if (state.step > 1) {
-      var back = el('button', 'hf-back', '← Back');
+      var back = el('button', 'hf-back', T('← Back'));
       back.type = 'button';
       back.addEventListener('click', function () { state.step = Math.max(1, state.step - 1); render(); scrollFormIntoView(); });
       nav.appendChild(back);
     }
-    var next = el('button', 'hf-next', state.step < TOTAL_STEPS ? 'Continue →' : (state.submitting ? 'Saving…' : 'Save my spot'));
+    var next = el('button', 'hf-next', state.step < TOTAL_STEPS ? T('Continue →') : (state.submitting ? T('Saving…') : T('Save my spot')));
     next.type = 'button';
     next.disabled = !stepValid() || state.submitting;
     next.addEventListener('click', function () {
@@ -865,7 +927,7 @@
     });
     nav.appendChild(next);
     mountEl.appendChild(nav);
-    mountEl.appendChild(el('p', 'hf-privacy', '🛡 Free, no deposit, no obligation. Your information stays private.'));
+    mountEl.appendChild(el('p', 'hf-privacy', T('🛡 Free, no deposit, no obligation. Your information stays private.')));
 
     if (state.step === 5) renderRecaptcha();
   }
@@ -879,8 +941,8 @@
     mountEl.innerHTML = '';
     var t = el('div', 'hf-thanks hf-fade');
     t.appendChild(el('div', 'hf-thanks-badge', '✓'));
-    t.appendChild(el('h3', 'hf-thanks-h', "You're on the list."));
-    t.appendChild(el('p', 'hf-thanks-p', 'A care team member will reach out within one business day to confirm your spot — and you’ll be among the first to hear the clinic’s address and opening date.'));
+    t.appendChild(el('h3', 'hf-thanks-h', T("You're on the list.")));
+    t.appendChild(el('p', 'hf-thanks-p', T('A care team member will reach out within one business day to confirm your spot — and you’ll be among the first to hear the clinic’s address and opening date.')));
     mountEl.appendChild(t);
   }
 
@@ -891,7 +953,7 @@
     if (recaptchaRequested || window.grecaptcha) return;
     recaptchaRequested = true;
     var s = document.createElement('script');
-    s.src = 'https://www.google.com/recaptcha/api.js?render=explicit';
+    s.src = 'https://www.google.com/recaptcha/api.js?render=explicit' + (LANG === 'es' ? '&hl=es' : '');
     s.async = true; s.defer = true;
     s.onload = renderRecaptcha;
     document.head.appendChild(s);

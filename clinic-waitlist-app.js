@@ -320,6 +320,9 @@
     '.hf-h3{font-family:"DM Sans",sans-serif;font-size:20px;font-weight:600;color:#000;margin:22px 0 0}',
     '.hf-hint{font-family:Manrope,sans-serif;font-size:14px;line-height:1.6;color:#4b4b4b;margin:4px 0 0}',
     '.hf-inline-link{border:none;background:none;color:#571f4e;font:inherit;font-weight:600;text-decoration:underline;cursor:pointer;padding:0}',
+    '.clw-lang-toggle{display:inline-flex;align-items:center;gap:6px;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:600;color:#571f4e;text-decoration:none;border:1px solid rgba(87,31,78,.28);border-radius:999px;padding:6px 12px;margin-right:12px;white-space:nowrap;line-height:1}',
+    '.clw-lang-toggle:hover{background:#efe4ec}',
+    '@media (max-width:600px){.clw-lang-toggle{font-size:12px;padding:5px 10px;margin-right:8px}}',
     '.hf-field{margin-top:18px}',
     '.hf-label{display:block;font-family:Manrope,sans-serif;font-size:14px;font-weight:700;color:#000;margin-bottom:8px}',
     '.hf-input,.hf-select{width:100%;box-sizing:border-box;border:1px solid rgba(0,0,0,.15);border-radius:8px;background:#fff;padding:12px 16px;font-family:Manrope,sans-serif;font-size:16px;color:#000;outline:none;transition:border-color .15s,box-shadow .15s}',
@@ -443,6 +446,21 @@
       entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('hou-in'); io.unobserve(e.target); } });
     }, { threshold: 0.15 });
     targets.forEach(function (t) { t.classList.add('hou-reveal'); io.observe(t); });
+  }
+
+  /* EN⇄ES language toggle — injected into the header on both pages (single
+     source). Shows the other language's name and links to the mirror page;
+     preserves query string + hash so ad attribution carries across. */
+  function injectLangToggle() {
+    var host = $('.hou-header-right') || $('.hou-header-inner');
+    if (!host || $('.clw-lang-toggle')) return;
+    var toEs = LANG !== 'es';
+    var path = location.pathname;
+    var target = (toEs ? '/es' + path : path.replace(/^\/es(\/|$)/, '/')).replace(/\/{2,}/g, '/');
+    var a = el('a', 'clw-lang-toggle', toEs ? 'Español' : 'English');
+    a.href = target + (location.search || '') + (location.hash || '');
+    a.setAttribute('aria-label', toEs ? 'Cambiar a español' : 'Switch to English');
+    host.insertBefore(a, host.firstChild);
   }
 
   function initGlow(mount) {
@@ -1096,6 +1114,7 @@
     injectFonts();
     injectCSS();
     injectImages();
+    injectLangToggle();
     initMarquee();
     initFaq();
     initReveals();

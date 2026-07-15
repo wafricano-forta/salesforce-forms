@@ -1,5 +1,5 @@
 /* =========================================================================
-   FORTA — HOUSTON CLINIC WAITLIST APP  (clinic-waitlist-app.js, v1)
+   FORTA — HOUSTON CLINIC WAITLIST APP  (clinic-waitlist-app.js, v8)
    -------------------------------------------------------------------------
    Runs on:  fortahealth.com/clinic/houston-waitlist (Webflow page
              "Houston Waitlist", page id 6a5457844fabb6487a581a55).

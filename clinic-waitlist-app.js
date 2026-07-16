@@ -1,5 +1,5 @@
 /* =========================================================================
-   FORTA — CLINIC WAITLIST APP · OUTCOME ROUTING PATCH
+   FORTA — CLINIC WAITLIST APP · OUTCOME ROUTING PATCH  (rev 2)
    -------------------------------------------------------------------------
    Adds pass/fail routing to clinic-waitlist-app.js (currently every family
    just returns to the same page with ?submitted=1 and MQL Status is blank).
@@ -9,34 +9,38 @@
      collects (insurance/coverage, payor tofu_status, diagnosis, ZIP), then
      sets retURL + MQL Status accordingly. Web-to-Lead still fires for EVERY
      submission, so no leads are lost ("capture everyone").
-   - Layers the clinic on top of the existing in-home/virtual routing:
-       Houston metro  -> new /clinic/thank-you-* pages
-       outside metro  -> existing In-Home / Virtual thank-you pages
+   - Layers the clinic on top of the existing In-Home/Virtual routing:
+       Houston metro           -> new /clinic/thank-you-* pages
+       outside metro, In-Home  -> /in-home/thank-you-intake-schedule-your-call
+       outside metro, Virtual  -> /thank-you-intake-pre-qualified
    - Precedence: insurance -> diagnosis -> clinic -> in-home -> virtual -> DQ.
+
+   REV 2 CHANGE (Will): In-Home/Virtual passes now go straight to the two
+   intake pages below — no >=15hr "schedule-your-call" split. Only the
+   inHomeVirtualUrl() function changed vs rev 1.
 
    HOW TO APPLY (two edits inside the existing IIFE)
    1) Paste the block in SECTION A anywhere after the CONFIG (e.g. right
-      before the "SALESFORCE SUBMIT" section). It only uses helpers that
-      already exist in the app: LANG, state, houstonMetro(), inHomeQualifies(),
-      findPayorRow(), insStateFor(), famState().
-   2) In submit(), replace the three lines noted in SECTION B.
+      before the "SALESFORCE SUBMIT" section). Uses only helpers that already
+      exist: LANG, state, houstonMetro(), inHomeQualifies(), findPayorRow(),
+      insStateFor(), famState().
+   2) In submit(), replace the two lines noted in SECTION B.
 
    ASSUMPTIONS TO VERIFY
    - payor rows from tofu_payor_status.json include `tofu_status`
      ('Passing' | 'Disqualify'). (lander-form.js already relies on this.)
    - "MQL - Clinic" is added to the Salesforce MQL Status picklist. All other
-     status values reuse your existing picklist.
-   - Clinic (metro) is treated leniently: any insurance that isn't "none" or
-     an explicit Disqualify still becomes an MQL - Clinic waitlist lead (sales
-     verifies later). In-Home/Virtual still require a confirmed Passing payor.
+     status values reuse existing picklist entries.
+   - Clinic (metro) is lenient: any insurance that isn't "none" or an explicit
+     Disqualify still becomes an MQL - Clinic waitlist lead (sales verifies
+     later). In-Home/Virtual still require a confirmed Passing payor.
    - Requested Service stays "In Clinic" for all (origin); MQL Status carries
-     the routed service. Give me the In-Home/Virtual picklist values if you'd
-     rather set Requested Service per outcome.
+     the routed service.
    ========================================================================= */
 
 
 /* ============================== SECTION A ============================== */
-/* ---- paste this block after CONFIG (uses only existing app helpers) ---- */
+/* ---- paste after CONFIG (uses only existing app helpers) ---- */
 
 var TY = {
   scheduleEN:  location.origin + '/clinic/thank-you-schedule',
@@ -47,18 +51,11 @@ var TY = {
   dxES:        location.origin + '/es/clinic/thank-you-dx'
 };
 
-/* Existing In-Home / Virtual destinations — mirrors lander-form.js
-   thankYouUrlForMqlIntake(): >=15 hrs -> schedule page, <15 -> intake page. */
-function inHomeVirtualUrl(isEs, inHome, hours) {
-  var high = !isNaN(hours) && hours >= 15;
-  if (high) {
-    if (inHome) return isEs
-      ? 'https://www.fortahealth.com/in-home/thank-you-intake-schedule-your-call-spanish'
-      : 'https://www.fortahealth.com/in-home/thank-you-intake-schedule-your-call';
-    return isEs
-      ? 'https://www.fortahealth.com/es/thank-you-schedule'
-      : 'https://www.fortahealth.com/thank-you-schedule-your-call';
-  }
+/* Existing In-Home / Virtual intake destinations (locale-aware). */
+function inHomeVirtualUrl(isEs, inHome) {
+  if (inHome) return isEs
+    ? 'https://www.fortahealth.com/in-home/thank-you-intake-schedule-your-call-spanish'
+    : 'https://www.fortahealth.com/in-home/thank-you-intake-schedule-your-call';
   return isEs
     ? 'https://www.fortahealth.com/es/thank-you-intake'
     : 'https://www.fortahealth.com/thank-you-intake-pre-qualified';
@@ -71,8 +68,6 @@ function computeClinicRoute() {
   var inHome = inHomeQualifies();                        // in-home coverage ZIP
   var pRow   = findPayorRow(state.primaryType, state.primaryPayor, insStateFor('primaryState'));
   var tofu   = pRow ? pRow.tofu_status : null;           // 'Passing' | 'Disqualify' | null
-  var hasDx  = state.diagnosis === 'yes' || state.diagnosis === 'in-process';
-  var hours  = state.hours === '' ? NaN : Number(state.hours);
   var st     = famState();
 
   // 1 · No insurance
@@ -93,11 +88,11 @@ function computeClinicRoute() {
 
   // 5 · Outside metro, In-Home ZIP + accepted payor → In-Home
   if (inHome && tofu === 'Passing')
-    return { url: inHomeVirtualUrl(isEs, true, hours), mql: 'MQL - In-Home' };
+    return { url: inHomeVirtualUrl(isEs, true), mql: 'MQL - In-Home' };
 
   // 6 · Outside metro/In-Home, accepted payor → Virtual
   if (tofu === 'Passing')
-    return { url: inHomeVirtualUrl(isEs, false, hours), mql: 'MQL' };
+    return { url: inHomeVirtualUrl(isEs, false), mql: 'MQL' };
 
   // 7 · TX/SC Medicaid, not in any service area
   if ((st === 'TX' || st === 'SC') && state.primaryType === 'medicaid')
@@ -111,21 +106,15 @@ function computeClinicRoute() {
 /* ============================== SECTION B ============================== */
 /* ---- inside submit(), REPLACE these existing lines ---- */
 
-/* BEFORE:
-     fields.retURL = location.origin + location.pathname + '?submitted=1';
-   AFTER:  */
+/* BEFORE:  fields.retURL = location.origin + location.pathname + '?submitted=1';
+   AFTER:   */
      var __route = computeClinicRoute();
      fields.retURL = __route.url;
 
-/* BEFORE:
-     fields[SF.F_MQL_STATUS] = ''; // intentionally blank — see header note
-   AFTER:  */
+/* BEFORE:  fields[SF.F_MQL_STATUS] = ''; // intentionally blank — see header note
+   AFTER:   */
      fields[SF.F_MQL_STATUS] = __route.mql;
 
-/* Leave this line as-is (Requested Service = origin):
-     fields[SF.F_REQUESTED_SERVICE] = SF.REQUESTED_SERVICE_VALUE; // "In Clinic"
-
-   NOTE: the old inline thank-you (renderThankYou / ?submitted=1 branch in
-   init()) is now unused since retURL points to dedicated pages. Harmless to
-   leave; safe to remove. window.__clwDryRun still works — inspect
-   window.__clwLastPayload.fields.retURL to preview routing without submitting. */
+/* Leave as-is:  fields[SF.F_REQUESTED_SERVICE] = SF.REQUESTED_SERVICE_VALUE; // "In Clinic"
+   The old ?submitted=1 inline thank-you is now unused (harmless). Test with
+   window.__clwDryRun = true → inspect window.__clwLastPayload.fields.retURL. */

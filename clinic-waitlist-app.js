@@ -90,13 +90,13 @@
      ?lang=es). Salesforce values stay English — only on-screen labels change. */
   var LANG = (/(^|\/)es(\/|$)/i.test(location.pathname) || (function(){ try { return new URLSearchParams(location.search).get('lang') === 'es'; } catch (e) { return false; } })()) ? 'es' : 'en';
   var ES = {
-    'Founding waitlist': 'Lista de fundadores', '40 spots': '40 lugares', 'Step {n} of {N}': 'Paso {n} de {N}',
+    'Founding waitlist': 'Lista de fundadores', 'Limited spots': 'Cupos limitados', 'Step {n} of {N}': 'Paso {n} de {N}',
     'Continue →': 'Continuar →', '← Back': '← Atrás', 'Save my spot': 'Reserva mi lugar', 'Saving…': 'Enviando…',
     '🛡 Free, no deposit, no obligation. Your information stays private.': '🛡 Gratis, sin depósito y sin compromiso. Tu información se mantiene privada.',
     "You're on the list.": 'Ya estás en la lista.',
     'A care team member will reach out within one business day to confirm your spot — and you’ll be among the first to hear the clinic’s address and opening date.': 'Un miembro de nuestro equipo te contactará en un día hábil para confirmar tu lugar, y serás de los primeros en conocer la dirección y la fecha de apertura de la clínica.',
     'Save your spot': 'Reserva tu lugar',
-    'Only 40 founding spots — tell us where to reach you and you’re in line. The rest takes about a minute.': 'Solo 40 lugares de fundador. Dinos cómo comunicarnos contigo y quedarás en la lista. Lo demás toma cerca de un minuto.',
+    'Founding enrollment is limited — tell us where to reach you and you’re in line. The rest takes about a minute.': 'La inscripción de fundadores es limitada. Dinos cómo comunicarnos contigo y quedarás en la lista. Lo demás toma cerca de un minuto.',
     'Your name': 'Tu nombre', 'First and last name': 'Nombre y apellido', 'Email': 'Correo electrónico', 'Phone': 'Teléfono',
     'Preferred language': 'Idioma preferido', 'Select a language': 'Selecciona un idioma',
     'So our care team reaches out in the language you’re most comfortable with.': 'Para que nuestro equipo se comunique contigo en el idioma que prefieras.',
@@ -121,7 +121,7 @@
     'Great that it’s underway. Opening day may line up well with your timeline — our team will walk you through it.': 'Qué bien que ya está en camino. La fecha de apertura podría coincidir con tus tiempos; nuestro equipo te guiará.',
     'No problem. A diagnosis is typically needed for ABA, and our team can help you understand what’s required.': 'No hay problema. Por lo general se necesita un diagnóstico para ABA, y nuestro equipo puede ayudarte a entender qué se requiere.',
     'Your preferred schedule': 'Tu horario preferido',
-    'The clinic will be open 8:30–5:30, Monday–Friday. Founding families pick their session times first.': 'La clínica abrirá de 8:30 a 5:30, de lunes a viernes. Las familias fundadoras eligen sus horarios primero.',
+    'The clinic is open 8:30–5:30, Monday–Friday. Tell us what works and we’ll do our best to accommodate.': 'La clínica abre de 8:30 a 5:30, de lunes a viernes. Dinos qué te funciona y haremos lo posible por acomodarlo.',
     'Which session times fit your family best?': '¿Qué horarios le convienen más a tu familia?',
     'Mornings · 8:30–11:30': 'Mañanas · 8:30–11:30', 'Mid-day · 11:30–2:30': 'Mediodía · 11:30–2:30', 'Afternoons · 2:30–5:30': 'Tardes · 2:30–5:30', 'Flexible / not sure yet': 'Flexible / aún no estoy seguro',
     'Not a commitment — it helps us plan staffing and hold the right times for you.': 'No es un compromiso; nos ayuda a planificar el personal y reservar los horarios adecuados para ti.',
@@ -689,7 +689,7 @@
   }
   function renderStep(body) {
     if (state.step === 1) {
-      body.appendChild(stepHeader(T('Save your spot'), T('Only 40 founding spots — tell us where to reach you and you’re in line. The rest takes about a minute.')));
+      body.appendChild(stepHeader(T('Save your spot'), T('Founding enrollment is limited — tell us where to reach you and you’re in line. The rest takes about a minute.')));
       body.appendChild(textField(T('Your name'), 'parentName', { type: 'text', autocomplete: 'name', placeholder: T('First and last name') }));
       body.appendChild(textField(T('Email'), 'email', { type: 'email', autocomplete: 'email', placeholder: 'you@example.com' }));
       body.appendChild(textField(T('Phone'), 'phone', { type: 'tel', inputmode: 'tel', autocomplete: 'tel', placeholder: '(555) 555-5555' }));
@@ -764,7 +764,7 @@
       body.appendChild(d);
     }
     if (state.step === 4) {
-      body.appendChild(stepHeader(T('Your preferred schedule'), T('The clinic will be open 8:30–5:30, Monday–Friday. Founding families pick their session times first.')));
+      body.appendChild(stepHeader(T('Your preferred schedule'), T('The clinic is open 8:30–5:30, Monday–Friday. Tell us what works and we’ll do our best to accommodate.')));
       var f = el('div', 'hf-field');
       f.appendChild(el('label', 'hf-label', T('Which session times fit your family best?')));
       f.appendChild(choiceButtons('timing', [
@@ -790,7 +790,7 @@
         ih.innerHTML =
           '<span class="hf-ih-badge"><span class="hf-ih-dot"></span> ' + (ihEs ? 'La terapia en el hogar está disponible en tu código postal' : 'In-Home is available at your ZIP') + '</span>' +
           '<p class="hf-ih-t">' + esc(T('Want a jump-start while you wait?')) + '</p>' +
-          '<p class="hf-ih-p">' + (ihEs ? 'No tienes que esperar a que abra la clínica. La terapia ABA en el hogar está disponible en tu área ahora mismo: tu hijo/a puede empezar antes, y las familias que ya están en terapia con Forta tienen <strong>prioridad para los lugares de fundador de la clínica</strong>.' : 'You don’t have to wait for the clinic to open. In-Home ABA is available in your area right now — it gets your child started sooner, and families already in therapy with Forta get <strong>priority for the founding clinic spots</strong>.') + '</p>' +
+          '<p class="hf-ih-p">' + (ihEs ? 'No tienes que esperar a que abra la clínica. La terapia ABA en el hogar está disponible en tu área ahora mismo: tu hijo/a puede empezar antes, y las familias que ya están en ABA con Forta suelen ser <strong>las primeras en la fila para la clínica</strong>.' : 'You don’t have to wait for the clinic to open. In-Home ABA is available in your area right now — it gets your child started sooner, and families already in ABA with Forta are <strong>likely first in line for the clinic</strong>.') + '</p>' +
           '<p class="hf-ih-q">' + esc(T('Want our team to reach out about starting In-Home now?')) + '</p>';
         ih.appendChild(choiceButtons('inHomeInterest', [
           { label: T('Yes, tell me more'), value: 'yes', tone: 'info' },
@@ -829,7 +829,7 @@
     mountEl.innerHTML = '';
     var top = el('div', 'hf-top');
     top.appendChild(el('div', 'hf-kicker', T('Founding waitlist')));
-    top.appendChild(el('div', 'hf-spots', T('40 spots')));
+    top.appendChild(el('div', 'hf-spots', T('Limited spots')));
     mountEl.appendChild(top);
     var top2 = el('div', 'hf-top');
     top2.style.marginTop = '10px';
@@ -1001,7 +1001,7 @@
     // answer is preserved here too.
     fields.description = 'Clinic waitlist — Sugar Land / SW Houston. ' +
       'Preferred session time: ' + (TIMING_TO_SF[state.timing] || '') + '. ' +
-      'Clinic hours 8:30-5:30 M-F. 40 founding spots.' +
+      'Clinic hours 8:30-5:30 M-F.' +
       (LEAD_SOURCE_TO_SF[state.leadSource] ? ' Heard about us: ' + state.leadSource + '.' : '');
     // In-Home cross-sell signal — only meaningful when the ZIP qualified and
     // the question was shown. Rides in description (no dedicated SF field yet).

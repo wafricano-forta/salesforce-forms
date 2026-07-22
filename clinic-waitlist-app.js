@@ -1,5 +1,5 @@
 /* =========================================================================
-   FORTA — HOUSTON CLINIC WAITLIST APP  (clinic-waitlist-app.js, v9)
+   FORTA — HOUSTON CLINIC WAITLIST APP  (clinic-waitlist-app.js, v10)
    -------------------------------------------------------------------------
    Runs on:  fortahealth.com/clinic/houston-waitlist (Webflow page
              "Houston Waitlist", page id 6a5457844fabb6487a581a55).
@@ -92,6 +92,7 @@
   var ES = {
     'Founding waitlist': 'Lista de fundadores', 'Limited spots': 'Cupos limitados', 'Step {n} of {N}': 'Paso {n} de {N}',
     'Continue →': 'Continuar →', '← Back': '← Atrás', 'Save my spot': 'Reserva mi lugar', 'Saving…': 'Enviando…',
+    'HIPAA-compliant': 'Cumple con HIPAA', 'Secure & encrypted': 'Seguro y cifrado', 'Private & confidential': 'Privado y confidencial', 'Free, no obligation': 'Gratis, sin compromiso',
     '🛡 Free, no deposit, no obligation. Your information stays private.': '🛡 Gratis, sin depósito y sin compromiso. Tu información se mantiene privada.',
     "You're on the list.": 'Ya estás en la lista.',
     'A care team member will reach out within one business day to confirm your spot — and you’ll be among the first to hear the clinic’s address and opening date.': 'Un miembro de nuestro equipo te contactará en un día hábil para confirmar tu lugar, y serás de los primeros en conocer la dirección y la fecha de apertura de la clínica.',
@@ -859,7 +860,14 @@
     });
     nav.appendChild(next);
     mountEl.appendChild(nav);
-    mountEl.appendChild(el('p', 'hf-privacy', T('🛡 Free, no deposit, no obligation. Your information stays private.')));
+    var hfTrust = el('div', 'hf-privacy hf-trust',
+      '<span style="display:inline-flex;align-items:center;gap:7px"><span aria-hidden="true" style="font-size:16px;line-height:1">🛡️</span><span>' + T('HIPAA-compliant') + '</span></span>' +
+      '<span style="display:inline-flex;align-items:center;gap:7px"><span aria-hidden="true" style="font-size:16px;line-height:1">🔒</span><span>' + T('Secure & encrypted') + '</span></span>' +
+      '<span style="display:inline-flex;align-items:center;gap:7px"><span aria-hidden="true" style="font-size:16px;line-height:1">🔐</span><span>' + T('Private & confidential') + '</span></span>' +
+      '<span style="display:inline-flex;align-items:center;gap:7px"><span aria-hidden="true" style="font-size:16px;line-height:1">✅</span><span>' + T('Free, no obligation') + '</span></span>'
+    );
+    hfTrust.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px 18px;margin-top:14px;font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:600;color:#000;text-align:center';
+    mountEl.appendChild(hfTrust);
     if (state.step === 5) renderRecaptcha();
   }
   function scrollFormIntoView() {

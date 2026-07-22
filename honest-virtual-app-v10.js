@@ -662,7 +662,12 @@
                 '<p class="text-xs font-medium text-muted-foreground">Step ' + step + ' of ' + TOTAL + '</p>' +
               '</div><div class="mt-3 flex gap-1.5" aria-hidden="true">' + progress() + '</div></div>' +
               '<form id="lf-form" novalidate>' + renderStep() + nav() +
-                '<p class="mt-4 flex items-center justify-center gap-1.5 text-center text-xs leading-relaxed text-muted-foreground">' + IC.shield + ' Free, no obligation. Your information stays private.</p>' +
+                '<div class="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-center">' +
+                '<span class="inline-flex items-center gap-1.5 text-xs font-semibold text-foreground"><span aria-hidden="true" class="text-sm">🛡️</span>HIPAA-compliant</span>' +
+                '<span class="inline-flex items-center gap-1.5 text-xs font-semibold text-foreground"><span aria-hidden="true" class="text-sm">🔒</span>Secure &amp; encrypted</span>' +
+                '<span class="inline-flex items-center gap-1.5 text-xs font-semibold text-foreground"><span aria-hidden="true" class="text-sm">🔐</span>Private &amp; confidential</span>' +
+                '<span class="inline-flex items-center gap-1.5 text-xs font-semibold text-foreground"><span aria-hidden="true" class="text-sm">✅</span>Free, no obligation</span>' +
+                '</div>' +
               '</form>' +
             '</div>' +
           '</div>';

@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
 // Forta Health — Webinar registration form
-// v2.0.0
+// v2.1.0
 //
 // Drop-in replacement for the v1 script previously served from
 // dev.marina.al/forta/forta-webinar.js.
@@ -29,6 +29,11 @@
 //      real external endpoint, and say so loudly in the console otherwise.
 //   6. window.FortaWebinarForm exposes version + live state for debugging,
 //      and ?fortaDebug=1 turns on console tracing.
+//   7. v2.1.0 — recovery poll for a missed onRecaptchaLoad. api.js is async and
+//      its tag precedes ours; when it won the race it called onRecaptchaLoad
+//      before that function existed, Google never retried, the widget never
+//      rendered, and every submit was refused with "Please wait for the
+//      security verification to load completely." v1 had the same exposure.
 //
 // Behaviour that is deliberately unchanged: spam heuristics, email rules,
 // phone mask, payor dropdown, the Parent-only insurance question, and the
@@ -41,9 +46,12 @@
     // CONFIG — every URL, key and Salesforce field id in one place
     // -----------------------------------------------------------------------
     var CONFIG = {
-        version: '2.0.0',
+        version: '2.1.0',
 
         recaptchaSiteKey: '6Ldp-yorAAAAAH7nTspqJRX-wZQ1HKfvJEpV3g8B',
+        // Recovery poll for a missed onRecaptchaLoad callback — see ensureRecaptcha().
+        recaptchaPollMs: 250,
+        recaptchaReadyTimeoutMs: 20000,
         payorDataUrl: 'https://cdn.prod.fortahealth.com/assets/tofu_payor_status.json',
 
         // Salesforce Web-to-Lead endpoint, matching src/forta-form-v11.html.
@@ -401,6 +409,52 @@
         renderRecaptcha();
     };
 
+    // Google's api.js calls ?onload=onRecaptchaLoad EXACTLY ONCE, the moment it
+    // finishes loading. Its <script> tag is async and sits ahead of ours, so if
+    // it wins the download race the callback fires while onRecaptchaLoad is
+    // still undefined — Google logs an error and never tries again. The widget
+    // then never renders and every submit is blocked by the guard in
+    // handleSubmit(). Do not rely on the callback alone: poll until the API is
+    // usable, so a missed callback heals itself.
+    var recaptchaPollTimer = null;
+    var recaptchaPollDeadline = 0;
+
+    function stopRecaptchaPoll() {
+        if (recaptchaPollTimer) {
+            clearInterval(recaptchaPollTimer);
+            recaptchaPollTimer = null;
+        }
+    }
+
+    function ensureRecaptcha() {
+        renderRecaptcha();
+        if (recaptchaRendered || recaptchaPollTimer) {
+            return;
+        }
+
+        recaptchaPollDeadline = Date.now() + CONFIG.recaptchaReadyTimeoutMs;
+        recaptchaPollTimer = setInterval(function () {
+            renderRecaptcha();
+
+            if (recaptchaRendered) {
+                debug('reCAPTCHA recovered by polling');
+                stopRecaptchaPoll();
+                return;
+            }
+
+            if (Date.now() > recaptchaPollDeadline) {
+                stopRecaptchaPoll();
+                warn('reCAPTCHA never became available; blocking submissions');
+                var captchaErrorMessage = byId(CONFIG.fields.captchaError);
+                if (captchaErrorMessage) {
+                    captchaErrorMessage.textContent =
+                        'Security verification could not load. Please refresh the page and try again.';
+                    captchaErrorMessage.style.display = 'block';
+                }
+            }
+        }, CONFIG.recaptchaPollMs);
+    }
+
     // ------------------------------------
     // Form lookup
     // ------------------------------------
@@ -534,9 +588,15 @@
             return;
         }
 
+        // Last chance: the API may have arrived after the poll gave up, or the
+        // visitor may be submitting mid-load.
+        if (!recaptchaLoaded) {
+            renderRecaptcha();
+        }
+
         if (!recaptchaLoaded || typeof grecaptcha === 'undefined') {
             rejectSubmission(event, 'recaptcha_not_loaded');
-            alert('Please wait for the security verification to load completely.');
+            alert('Security verification has not loaded. Please refresh the page and try again.');
             return;
         }
 
@@ -610,7 +670,7 @@
 
         // 2. Everything below is optional and individually guarded.
         safely('populateHiddenFields', populateHiddenFields);
-        safely('renderRecaptcha', renderRecaptcha);
+        safely('ensureRecaptcha', ensureRecaptcha);
 
         safely('email handlers', function () {
             var emailInput = byId(CONFIG.fields.email);
@@ -773,6 +833,7 @@
                 submitListenerBound: formInitialized,
                 recaptchaRendered: recaptchaRendered,
                 recaptchaLoaded: recaptchaLoaded,
+                recaptchaPolling: !!recaptchaPollTimer,
                 payorRows: jsonData.length,
                 successWrapperFound: !!getSuccessWrapper(),
                 submitEndpoint: form ? resolveSubmitEndpoint(form) : null,

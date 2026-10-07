@@ -135,7 +135,7 @@
     'Referring provider or practice': 'Proveedor o consultorio que refiere', 'Provider / practice name': 'Nombre del proveedor o consultorio',
     'Please complete the CAPTCHA to continue.': 'Por favor completa el CAPTCHA para continuar.',
     'Want a jump-start while you wait?': '¿Quieres empezar mientras esperas?',
-    'Want our team to reach out about starting In-Home now?': '¿Quieres que nuestro equipo te contacte para empezar la terapia en el hogar ahora?',
+    'Want our team to reach out about starting In-Home now?': '¿Quieres que nuestro equipo te contacte para empezar la terapia a domicilio ahora?',
     'Yes, tell me more': 'Sí, cuéntenme más', 'Not right now': 'Ahora no',
     'ABA Provider': 'Proveedor de ABA', 'AI Search': 'Búsqueda con IA', 'Billboard': 'Valla publicitaria', 'Facebook Group': 'Grupo de Facebook', 'Family Member': 'Familiar', 'Forta Parent Referral': 'Recomendación de un padre de Forta', 'Insurance Referral': 'Referencia del seguro', 'Physician Referral': 'Referencia médica', 'Social Worker': 'Trabajador social', 'Web Search': 'Búsqueda web', 'Youtube': 'YouTube', 'Other': 'Otro'
   };
@@ -705,7 +705,7 @@
           body.appendChild(el('div', 'hf-note hf-positive', '<span>✓</span><span>' + esc(T('You’re in our Houston service area — this clinic is being built for families like yours.')) + '</span>'));
         } else if (tier === 'inhome') {
           body.appendChild(el('div', 'hf-note hf-info', '<span>&#9432;</span><span>' + (isEs
-            ? 'Todavía no tendremos una clínica en tu ciudad, pero la terapia ABA en el hogar de Forta está disponible para ti hoy. Puedes unirte a la lista de todos modos y nuestro equipo te ayudará a empezar en casa mientras tanto. <a href="' + INHOME_URL + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Conoce la terapia en el hogar →</a>'
+            ? 'Todavía no tendremos una clínica en tu ciudad, pero la terapia ABA a domicilio de Forta está disponible para ti hoy. Puedes unirte a la lista de todos modos y nuestro equipo te ayudará a empezar en casa mientras tanto. <a href="' + INHOME_URL + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Conoce la terapia a domicilio →</a>'
             : 'We won’t have a clinic in your city yet — but Forta’s <strong>In-Home ABA</strong> is available to you today. You can still join the waitlist, and our team will get you started at home in the meantime. <a href="' + INHOME_URL + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Explore In-Home ABA →</a>') + '</span>'));
         } else if (tier === 'virtual') {
           body.appendChild(el('div', 'hf-note hf-caution', '<span>&#9432;</span><span>' + (isEs
@@ -789,9 +789,9 @@
       if (inHomeQualifies()) {
         var ih = el('div', 'hf-ih hf-fade'); var ihEs = LANG === 'es';
         ih.innerHTML =
-          '<span class="hf-ih-badge"><span class="hf-ih-dot"></span> ' + (ihEs ? 'La terapia en el hogar está disponible en tu código postal' : 'In-Home is available at your ZIP') + '</span>' +
+          '<span class="hf-ih-badge"><span class="hf-ih-dot"></span> ' + (ihEs ? 'La terapia a domicilio está disponible en tu código postal' : 'In-Home is available at your ZIP') + '</span>' +
           '<p class="hf-ih-t">' + esc(T('Want a jump-start while you wait?')) + '</p>' +
-          '<p class="hf-ih-p">' + (ihEs ? 'No tienes que esperar a que abra la clínica. La terapia ABA en el hogar está disponible en tu área ahora mismo: tu hijo/a puede empezar antes, y las familias que ya están en ABA con Forta suelen ser <strong>las primeras en la fila para la clínica</strong>.' : 'You don’t have to wait for the clinic to open. In-Home ABA is available in your area right now — it gets your child started sooner, and families already in ABA with Forta are <strong>likely first in line for the clinic</strong>.') + '</p>' +
+          '<p class="hf-ih-p">' + (ihEs ? 'No tienes que esperar a que abra la clínica. La terapia ABA a domicilio está disponible en tu área ahora mismo: tu hijo/a puede empezar antes, y las familias que ya están en ABA con Forta suelen ser <strong>las primeras en la fila para la clínica</strong>.' : 'You don’t have to wait for the clinic to open. In-Home ABA is available in your area right now — it gets your child started sooner, and families already in ABA with Forta are <strong>likely first in line for the clinic</strong>.') + '</p>' +
           '<p class="hf-ih-q">' + esc(T('Want our team to reach out about starting In-Home now?')) + '</p>';
         ih.appendChild(choiceButtons('inHomeInterest', [
           { label: T('Yes, tell me more'), value: 'yes', tone: 'info' },

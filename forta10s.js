@@ -113,6 +113,11 @@ function ensureExpectedAbaHoursRequired(formSalesEl) {
     }
 }
 
+/* Spanish thank-you routing (Oct 2026): on a Spanish page (or when the parent picks Spanish), send every
+   outcome, including DQ and diagnosis, to the Spanish version of the same thank-you page. */
+function fortaIsSpanishPage(){var l=(document.documentElement.getAttribute('lang')||'').toLowerCase();return l.indexOf('es')===0||location.pathname.indexOf('/es/')===0;}
+function fortaSpanishThankYou(url){var M={'/thank-you-2':'/es/thank-you-2','/thank-you-diagnosis':'/es/thank-you-diagnosis','/thank-you-schedule-your-call':'/es/thank-you-schedule','/thank-you-intake-pre-qualified':'/es/thank-you-intake','/in-home/thank-you-intake-schedule-your-call':'/es/in-home/thank-you-intake-schedule-your-call','/in-home/thank-you-intake-schedule-your-call-spanish':'/es/in-home/thank-you-intake-schedule-your-call'};var m=/^(https:\/\/www\.fortahealth\.com)(\/[^?#]*)(.*)$/.exec(url||'');if(!m)return url;var p=m[2].replace(/\/+$/,'');return M[p]?m[1]+M[p]+m[3]:url;}
+
 function thankYouUrlForMqlIntake(formSalesEl, isSpanishLanguage, isInHomeQualifying) {
     var spanish = !!isSpanishLanguage;
     var inHome = !!isInHomeQualifying;
@@ -969,6 +974,7 @@ function initializeScript() {
         mqlStatusField.value = mqlStatus;
 
         // Set the return URL
+        if (isSpanishLanguage || fortaIsSpanishPage()) { returnURL = fortaSpanishThankYou(returnURL); }
         document.getElementsByName("retURL")[0].value = returnURL;
 
         // consolidate the two different submit handlers into one

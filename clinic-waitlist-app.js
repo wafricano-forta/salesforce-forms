@@ -203,9 +203,9 @@
   var IMG = {
     logo: CDN + '63ea27a1af9c9870fe661883_logomark.svg',
     faces: [
-      CDN + '6a5402fe347fb3edadc9205e_hou-clinician-1.png',
-      CDN + '6a540304c1d76f4028b8fc4b_hou-clinician-2.png',
-      CDN + '6a540309f361bf9f865f1b91_hou-clinician-3.png'
+      CDN + '6ac9a7f6a987012b00a20874_hou-clinician-1-132.webp',
+      CDN + '6ac9a7f6a987012b00a208a4_hou-clinician-2-132.webp',
+      CDN + '6ac9a7f634d91b0ebfdad798_hou-clinician-3-132.webp'
     ],
     payors: [
       { src: CDN + '6a54030d2522de0aaf65f338_hou-payor-bcbs.avif', alt: 'Blue Cross Blue Shield', h: 32 },

@@ -289,6 +289,11 @@
         return fbclid ? 'fb.1.' + Math.floor(Date.now() / 1000) + '.' + fbclid : '';
       }
 
+      /* Spanish thank-you routing (Oct 2026): on a Spanish page, send every outcome, including DQ and
+         diagnosis, to the Spanish version of the same thank-you page. */
+      function fortaIsSpanishPage(){var l=(document.documentElement.getAttribute('lang')||'').toLowerCase();return l.indexOf('es')===0||location.pathname.indexOf('/es/')===0;}
+      function fortaSpanishThankYou(url){var M={'/thank-you-2':'/es/thank-you-2','/thank-you-diagnosis':'/es/thank-you-diagnosis','/thank-you-schedule-your-call':'/es/thank-you-schedule','/thank-you-intake-pre-qualified':'/es/thank-you-intake','/in-home/thank-you-intake-schedule-your-call':'/es/in-home/thank-you-intake-schedule-your-call','/in-home/thank-you-intake-schedule-your-call-spanish':'/es/in-home/thank-you-intake-schedule-your-call'};var m=/^(https:\/\/www\.fortahealth\.com)(\/[^?#]*)(.*)$/.exec(url||'');if(!m)return url;var p=m[2].replace(/\/+$/,'');return M[p]?m[1]+M[p]+m[3]:url;}
+
       /* ---- Thank-you URL (mirrors marina thankYouUrlForMqlIntake) ---- */
       function thankYouIntakeUrl(isSpanish, inHome) {
         var hrs = hoursNum();
@@ -310,7 +315,7 @@
         var primaryRow = findPayorRow(data.pState, data.pPayor);
         var tofuStatus = primaryRow ? primaryRow.tofu_status : null;
         var payorType = primaryRow ? primaryRow.payor_type : null;
-        var isSpanish = false; // English-only lander
+        var isSpanish = fortaIsSpanishPage();
         var lc = asdDiagnosis.toLowerCase();
         var hasPositiveDiagnosis = lc === 'yes';
         var isInHomePassing = isQualifyingZip && tofuStatus === 'Passing' && hasPositiveDiagnosis;
@@ -341,6 +346,7 @@
         } else {
           returnURL = 'https://www.fortahealth.com/thank-you-2'; mqlStatus = 'DQ - Other';
         }
+        if (isSpanish) returnURL = fortaSpanishThankYou(returnURL);
         return { returnURL: returnURL, mqlStatus: mqlStatus, isQualifyingZip: isQualifyingZip };
       }
 
@@ -367,7 +373,7 @@
         f[SF.age] = AGE_TO_SF[data.childAge] || '';
         f[SF.hasInsurance] = HASINS_TO_SF[data.hasInsurance] || '';
         f[SF.expectedHours] = data.hours;
-        f[SF.language] = 'English';
+        f[SF.language] = fortaIsSpanishPage() ? 'Spanish' : 'English';
         f[SF.mqlStatus] = route.mqlStatus;
         f[SF.inHomeZipStatus] = route.isQualifyingZip ? 'Yes' : 'No';
         f[SF.typePrimary] = TYPE_TO_SF[data.pType] || '';
@@ -760,4 +766,91 @@
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
+})();
+
+/* ===== Forta virtual form Spanish layer (Oct 2026) — activates only on Spanish pages (/es/ or <html lang="es">).
+   Translates visible text, placeholders and aria-labels after every render. Submitted values stay English.
+   Consent/legal text intentionally stays English (same as the Houston form). ===== */
+(function(){
+  var l=(document.documentElement.getAttribute('lang')||'').toLowerCase();
+  if(!(l.indexOf('es')===0||location.pathname.indexOf('/es/')===0))return;
+  var M={
+    "Free eligibility check":"Verificación de elegibilidad gratuita",
+    "Let's start with your child":"Empecemos por su hijo",
+    "A few quick questions. There are no wrong answers.":"Unas preguntas rápidas. No hay respuestas incorrectas.",
+    "Your child's age":"Edad de su hijo","Select an age range":"Seleccione un rango de edad",
+    "Under 2":"Menos de 2 años","2–5 years":"2 a 5 años","6–9 years":"6 a 9 años","10–13 years":"10 a 13 años","14+ years":"14 años o más",
+    "Does your child have an autism (ASD) diagnosis?":"¿Su hijo tiene un diagnóstico de autismo (TEA)?",
+    "Yes":"Sí","Not yet":"Todavía no","In process":"En proceso","I'm not sure":"No estoy seguro/a",
+    "Continue":"Continuar","Back":"Atrás",
+    "HIPAA-compliant":"Cumple con HIPAA","Secure & encrypted":"Seguro y cifrado","Private & confidential":"Privado y confidencial","Free, no obligation":"Gratis, sin compromiso",
+    "Free, no obligation. Your information stays private.":"Gratis, sin compromiso. Su información se mantiene privada.",
+    "ABA usually requires an autism diagnosis to start. That’s okay — tell us where you are and our team can point you to next steps.":"Por lo general, el ABA requiere un diagnóstico de autismo para comenzar. No hay problema: cuéntenos en qué punto está y nuestro equipo le indicará los próximos pasos.",
+    "Great that it’s underway. We can often begin preparing once your diagnosis is finalized — our team will walk you through timing.":"Qué bueno que ya está en curso. A menudo podemos empezar a prepararnos cuando el diagnóstico esté confirmado; nuestro equipo le explicará los plazos.",
+    "No problem. A diagnosis is typically needed for ABA, and our team can help you understand what’s required.":"No hay problema. Por lo general se necesita un diagnóstico para el ABA, y nuestro equipo puede ayudarle a entender qué se requiere.",
+    "The honest part: your time":"La parte honesta: su tiempo",
+    "Great Virtual ABA takes about 10 hours a week, with you as an active partner alongside your clinical team. Let's see how it can fit your family's week.":"Un buen ABA virtual requiere unas 10 horas a la semana, con usted como participante activo junto a su equipo clínico. Veamos cómo puede encajar en la semana de su familia.",
+    "When can you make time for sessions?":"¿Cuándo puede dedicar tiempo a las sesiones?",
+    "Any day, any time":"Cualquier día, a cualquier hora","Weekdays only":"Solo entre semana","Nights & weekends":"Noches y fines de semana","Weekends only":"Solo fines de semana",
+    "We build the schedule around you — nights and weekends included.":"Armamos el horario según su disponibilidad, incluidas noches y fines de semana.",
+    "Total hours per week you can make room for":"Total de horas por semana que puede dedicar",
+    "Heads up:":"Atención:",
+    "fitting ~10 hours into 2 days means about 5 hours each weekend day, which is a lot for a child. It can work, but adding even one or two weekday sessions makes it much more doable — we’ll help you plan it.":"acomodar ~10 horas en 2 días significa unas 5 horas cada día del fin de semana, lo cual es mucho para un niño. Puede funcionar, pero agregar aunque sea una o dos sesiones entre semana lo hace mucho más llevadero; le ayudaremos a planificarlo.",
+    "A quick note:":"Una nota rápida:",
+    "effective ABA needs about 10 hours a week, and most providers — us included — generally can't start below that. You're welcome to submit anyway, and we'll reach out to talk through your options.":"un ABA eficaz necesita unas 10 horas a la semana, y la mayoría de los proveedores, incluidos nosotros, por lo general no pueden comenzar con menos. Puede enviar el formulario de todos modos y nos comunicaremos con usted para hablar de sus opciones.",
+    "10 hours works. Just know it leaves little wiggle room for cancellations or schedule changes — a small buffer helps. Think 2 hours a day across 7 days rather than 5.":"10 horas funcionan. Solo tenga en cuenta que deja poco margen para cancelaciones o cambios de horario; un pequeño margen ayuda. Piense en 2 horas al día durante 7 días en lugar de 5.",
+    "Insurance & coverage":"Seguro y cobertura",
+    "We accept 300+ policies and are Medicaid approved in many states. This helps us check your eligibility fast.":"Aceptamos más de 300 pólizas y estamos aprobados por Medicaid en muchos estados. Esto nos ayuda a verificar su elegibilidad rápidamente.",
+    "Does your child have health insurance?":"¿Su hijo tiene seguro médico?",
+    "Yes — primary only":"Sí, solo primario","Yes — primary & secondary":"Sí, primario y secundario","No insurance / not sure":"Sin seguro / no estoy seguro/a",
+    "We do require insurance to begin ABA therapy. Please come back and finish this step once you have your insurance information available.":"Necesitamos un seguro para comenzar la terapia ABA. Vuelva y complete este paso cuando tenga a mano la información de su seguro.",
+    "Primary insurance":"Seguro primario","Secondary insurance":"Seguro secundario","Insurance details":"Datos del seguro",
+    "State":"Estado","Select your state":"Seleccione su estado","Start over":"Empezar de nuevo",
+    "Insurance type":"Tipo de seguro","Select type":"Seleccione el tipo","Commercial":"Comercial",
+    "Payor":"Aseguradora","Select your payor":"Seleccione su aseguradora","Loading payors…":"Cargando aseguradoras…",
+    "My payor isn’t listed / not sure":"Mi aseguradora no aparece / no estoy seguro/a",
+    "Don’t see yours? Choose “not listed” — our team will still check your eligibility.":"¿No ve la suya? Elija “no aparece”: nuestro equipo verificará su elegibilidad de todos modos.",
+    "Where can we reach you?":"¿Cómo podemos comunicarnos con usted?",
+    "A care team member will follow up. We never share your information.":"Un miembro del equipo de atención se comunicará con usted. Nunca compartimos su información.",
+    "Your name":"Su nombre","Email":"Correo electrónico","Phone":"Teléfono","ZIP code":"Código postal",
+    "How did you hear about us?":"¿Cómo se enteró de nosotros?","Select an option":"Seleccione una opción",
+    "ABA Provider":"Proveedor de ABA","AI Search":"Búsqueda con IA","Family Member":"Familiar","Forta Parent Referral":"Recomendación de padre Forta",
+    "Insurance Referral":"Recomendación del seguro","Physician Referral":"Recomendación médica","Social Worker":"Trabajador social","Web Search":"Búsqueda en la web","Other":"Otro",
+    "Referring provider":"Proveedor que lo refirió","(optional)":"(opcional)",
+    "Please complete the CAPTCHA to continue.":"Complete el CAPTCHA para continuar.",
+    "Check my eligibility":"Verificar mi elegibilidad","Sending":"Enviando",
+    "Thank you. We're glad you're here.":"Gracias. Nos alegra que esté aquí.",
+    "A member of our care team will reach out within one business day to check your eligibility and answer every question. No pressure, and no obligation.":"Un miembro de nuestro equipo de atención se comunicará con usted en un plazo de un día hábil para verificar su elegibilidad y responder todas sus preguntas. Sin presión y sin compromiso.",
+    "First and last name":"Nombre y apellido","e.g. 10":"p. ej., 10","e.g. 60601":"p. ej., 60601","Provider or practice name":"Nombre del proveedor o consultorio",
+    "diagnosis":"diagnóstico","availability":"disponibilidad","hasInsurance":"seguro",
+    "Parent of a daughter with autism":"Padre o madre de una niña con autismo","Parent of a son with autism":"Padre o madre de un niño con autismo","Verified Trustpilot review":"Reseña verificada de Trustpilot",
+    "We came from nothing to 3-word sentences and I could cry. I fought so hard to get her in ABA and it’s paying off.":"Pasamos de nada a oraciones de 3 palabras y podría llorar. Luché mucho para que entrara a ABA y está dando resultados.",
+    "Forta has helped me help my son, working on the skills he needs to master, with patience.":"Forta me ha ayudado a ayudar a mi hijo, trabajando con paciencia en las habilidades que necesita dominar.",
+    "I call our sessions “computer school.” He knows it’s playing and learning, not therapy.":"Yo llamo a nuestras sesiones “la escuela de la computadora”. Él sabe que es jugar y aprender, no terapia.",
+    "Having a wonderful RBT and BCBA has made things better at home for both of us.":"Tener un RBT y un BCBA maravillosos ha mejorado las cosas en casa para los dos.",
+    "Doing it virtually has been wonderful. My son does not like when people come into our home.":"Hacerlo de forma virtual ha sido maravilloso. A mi hijo no le gusta que entren personas a nuestra casa.",
+    "My son enjoys working with the clinicians and engages with the computer. They are wonderful.":"A mi hijo le gusta trabajar con los profesionales clínicos y se involucra con la computadora. Son maravillosos.",
+    "Since starting with Forta, my son has gained the skills he needs to interact with his peers.":"Desde que empezó con Forta, mi hijo ha adquirido las habilidades que necesita para relacionarse con otros niños de su edad."
+  };
+  var R=[[/^Step (\d+) of (\d+)$/,'Paso $1 de $2'],[/^(.+) · Commercial$/,'$1 · Comercial'],[/^Show review (\d+)$/,'Mostrar reseña $1']];
+  function tr(s){
+    var m=/^(\s*)([\s\S]*?)(\s*)$/.exec(s); var core=m[2].replace(/\s+/g,' '); if(!core)return s;
+    var q=/^“([\s\S]*)”$/.exec(core); if(q&&M[q[1]])return m[1]+'“'+M[q[1]]+'”'+m[3];
+    if(M[core])return m[1]+M[core]+m[3];
+    for(var i=0;i<R.length;i++){if(R[i][0].test(core))return m[1]+core.replace(R[i][0],R[i][1])+m[3];}
+    return s;
+  }
+  function run(el){
+    if(!el)return;
+    var w=document.createTreeWalker(el,4),n,list=[];while(n=w.nextNode())list.push(n);
+    list.forEach(function(t){var v=tr(t.nodeValue);if(v!==t.nodeValue)t.nodeValue=v;});
+    var els=el.querySelectorAll?el.querySelectorAll('[placeholder],[aria-label]'):[];
+    for(var i=0;i<els.length;i++){['placeholder','aria-label'].forEach(function(a){var x=els[i].getAttribute(a);if(x){var y=tr(x);if(y!==x)els[i].setAttribute(a,y);}});}
+  }
+  function watch(id){
+    var el=document.getElementById(id);if(!el)return;run(el);
+    if(window.MutationObserver)new MutationObserver(function(){run(el);}).observe(el,{childList:true,subtree:true});
+  }
+  function start(){['lead-form','review-quote','review-attribution','review-dots'].forEach(watch);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
